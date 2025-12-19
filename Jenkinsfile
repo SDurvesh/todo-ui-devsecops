@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node18'     
-        sonarScanner 'SonarQube Scanner'
+        nodejs 'node18'
     }
 
     environment {
-        SONAR_PROJECT_KEY = 'todo-ui-devsecops'
+        SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
     }
 
     stages {
@@ -20,31 +19,20 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                  node -v
-                  npm -v
-                  npm install
-                '''
-            }
-        }
-
-        stage('Build UI') {
-            steps {
-                sh '''
-                  npm run build
-                '''
+                sh 'npm install'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh '''
-                      sonar-scanner \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=. \
-                        -Dsonar.exclusions=node_modules/**,dist/**
-                    '''
+                    sh """
+                    ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=todo-ui-devsecops \
+                    -Dsonar.projectName=Todo-UI-DevSecOps \
+                    -Dsonar.sources=src \
+                    -Dsonar.language=js
+                    """
                 }
             }
         }
@@ -56,15 +44,14 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
         success {
-            echo '✅ Pipeline completed successfully. Quality Gate PASSED.'
+            echo '✅ Pipeline passed Quality Gate'
         }
         failure {
-            echo '❌ Pipeline failed. Check SonarQube Quality Gate.'
+            echo '❌ Pipeline failed due to Quality Gate'
         }
     }
 }
