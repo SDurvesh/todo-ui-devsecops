@@ -68,9 +68,10 @@ pipeline {
         stage('OWASP ZAP DAST (Report Only)') {
             steps {
                 sh '''
-                  /snap/zaproxy/current/zap-baseline.py \
-                    -t ${APP_URL} \
-                    -r zap-report.html || true
+                    zaproxy -cmd \
+                    -port 8091 \
+                    -quickurl http://4.240.60.209:4173 \
+                    -quickout zap-report.html || true
                 '''
             }
         }
