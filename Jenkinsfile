@@ -71,7 +71,7 @@ pipeline {
                     zaproxy -cmd \
                     -port 8091 \
                     -quickurl http://4.240.60.209:4173 \
-                    -quickout zap-report.html || true
+                    -quickout /var/lib/jenkins/workspace/todo-ui-devsecops/zap-report.html || true
                 '''
             }
         }
@@ -79,7 +79,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: false
             sh 'pkill -f "npm run preview" || true'
         }
 
