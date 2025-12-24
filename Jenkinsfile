@@ -96,8 +96,13 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: false
-            sh 'pkill -f "npm run preview" || true'
+        archiveArtifacts artifacts: '''
+            zap-report.html,
+            sonar-quality-gate.json,
+            sonar-metrics.json
+        ''', allowEmptyArchive: true
+
+        sh 'pkill -f "npm run preview" || true'
         }
 
         success {
