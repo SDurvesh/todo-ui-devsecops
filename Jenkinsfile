@@ -121,10 +121,26 @@ pipeline {
                 emailext(
     to: 'durveshshendokar@gmail.com',
     from: 'durveshshendokar@gmail.com',
-    subject: "Jenkins Test Email",
-    body: "If you receive this, email config is working."
-)
+    subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
+    mimeType: 'text/html',
+    body: """
+        <h2>DevSecOps Pipeline Report</h2>
 
+        <p><b>Job:</b> ${env.JOB_NAME}</p>
+        <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
+        <p><b>Status:</b> ${currentBuild.currentResult}</p>
+        <p><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+
+        <h3>Security Summary</h3>
+        <ul>
+            <li>SAST: SonarQube ✔</li>
+            <li>DAST: OWASP ZAP ✔</li>
+        </ul>
+
+        <p>ZAP report attached.</p>
+    """,
+    attachmentsPattern: 'zap-report.html'
+)
                 }
             }
         }
