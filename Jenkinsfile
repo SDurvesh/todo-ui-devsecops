@@ -75,6 +75,23 @@ pipeline {
                 '''
             }
         }
+        stage('Fetch SonarQube Report') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                    echo "Fetching SonarQube Quality Gate..."
+                    curl -s -u $SONAR_TOKEN: \
+                    "http://4.240.60.209:9000/api/qualitygates/project_status?projectKey=todo-ui-devsecops" \
+                    > sonar-quality-gate.json
+
+                    echo "Fetching SonarQube Metrics..."
+                    curl -s -u $SONAR_TOKEN: \
+                    "http://4.240.60.209:9000/api/measures/component?component=todo-ui-devsecops&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density,ncloc" \
+                    > sonar-metrics.json
+                    '''
+                }
+            }
+        }
     }
 
     post {
