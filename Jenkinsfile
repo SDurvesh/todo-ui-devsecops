@@ -119,30 +119,12 @@ pipeline {
         stage('Send Security Report Email') {
             steps {
                 emailext(
-                to: 'durveshshendokar@gmail.com',
-                from: 'durveshshendokar@gmail.com',
-                subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
-                body: """
-Hello,
-
-DevSecOps pipeline execution summary:
-
-• Job Name   : ${env.JOB_NAME}
-• Build No   : ${env.BUILD_NUMBER}
-• Status     : ${currentBuild.currentResult}
-• Build URL  : ${env.BUILD_URL}
-
-Security Scans Performed:
-✔ SAST - SonarQube
-✔ DAST - OWASP ZAP
-
-Please find the attached ZAP security report.
-
-Regards,
-Jenkins DevSecOps Pipeline
-""",
-    attachmentsPattern: 'zap-report.html'
+    to: 'durveshshendokar@gmail.com',
+    from: 'durveshshendokar@gmail.com',
+    subject: "Jenkins Test Email",
+    body: "If you receive this, email config is working."
 )
+
                 }
             }
         }
