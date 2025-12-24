@@ -120,6 +120,7 @@ pipeline {
             steps {
                 emailext(
                 to: 'durveshshendokar@gmail.com',
+                from: 'durveshshendokar@gmail.com',
                 subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
                 body: """
 Hello,
