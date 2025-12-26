@@ -119,8 +119,8 @@ pipeline {
         stage('Send Security Report Email') {
             steps {
                 emailext(
-    to: 'durveshshendokar@gmail.com',
-    from: 'durveshshendokar@gmail.com',
+    to: 'durveshsshendokar@gmail.com',
+    from: 'durveshsshendokar@gmail.com',
     subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
     mimeType: 'text/html',
     body: """
