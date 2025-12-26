@@ -130,58 +130,55 @@ pipeline {
                 '''
             }
         }
-        stage('Send Security Report Email') {
-            steps {
-                emailext(
-    to: 'durveshsshendokar@gmail.com',
-    from: 'durveshsshendokar@gmail.com',
-    subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
-    mimeType: 'text/html',
-    body: """
-        <h2>DevSecOps Pipeline Report</h2>
+    }
 
-        <p><b>Job:</b> ${env.JOB_NAME}</p>
-        <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
-        <p><b>Status:</b> ${currentBuild.currentResult}</p>
-        <p><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+    post {
+    always {
 
-        <h3>Security Summary</h3>
-            <ul>
-            <li>SAST (SonarQube): <b>${env.SAST_STATUS}</b></li>
-            <li>DAST (OWASP ZAP): <b>${env.DAST_STATUS}</b></li>
-            </ul>
+        emailext(
+            to: 'durveshsshendokar@gmail.com',
+            from: 'durveshsshendokar@gmail.com',
+            subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
+            mimeType: 'text/html',
+            body: """
+                <h2>DevSecOps Pipeline Report</h2>
 
+                <p><b>Job:</b> ${env.JOB_NAME}</p>
+                <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
+                <p><b>Status:</b> ${currentBuild.currentResult}</p>
+                <p><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
 
-        <p>ZAP report attached.</p>
-    """,
-    attachmentsPattern: '''
+                <h3>Security Summary</h3>
+                <ul>
+                    <li>SAST (SonarQube): <b>${env.SAST_STATUS}</b></li>
+                    <li>DAST (OWASP ZAP): <b>${env.DAST_STATUS}</b></li>
+                </ul>
+
+                <p>Reports attached.</p>
+            """,
+            attachmentsPattern: '''
                 zap-report.html,
                 sonar-quality-gate.json,
                 sonar-metrics.json
             '''
-)
-                }
-            }
-        }
+        )
 
-    post {
-        always {
         archiveArtifacts artifacts: '''
             zap-report.html,
             sonar-quality-gate.json,
             sonar-metrics.json,
-            sonar-env.txt,
-            ''', allowEmptyArchive: true
+            sonar-env.txt
+        ''', allowEmptyArchive: true
 
         sh 'pkill -f "npm run preview" || true'
-        }
-
-        success {
-            echo '✅ Pipeline completed successfully (SAST + DAST)'
-        }
-
-        failure {
-            echo '❌ Pipeline failed (Check SonarQube Quality Gate)'
-        }
     }
+
+    success {
+        echo '✅ Pipeline completed successfully (SAST + DAST)'
+    }
+
+    failure {
+        echo '❌ Pipeline failed (Check SonarQube Quality Gate)'
+    }
+}
 }
