@@ -139,7 +139,11 @@ pipeline {
 
         <p>ZAP report attached.</p>
     """,
-    attachmentsPattern: 'zap-report.html'
+    attachmentsPattern: '''
+                zap-report.html,
+                sonar-quality-gate.json,
+                sonar-metrics.json
+            '''
 )
                 }
             }
