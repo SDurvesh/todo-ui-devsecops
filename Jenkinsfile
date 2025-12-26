@@ -8,6 +8,8 @@ pipeline {
     environment {
         SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
         APP_URL = 'http://4.240.60.209:4173'
+        SAST_STATUS = 'NOT_RUN'
+        DAST_STATUS = 'NOT_RUN'
     }
 
     stages {
@@ -44,11 +46,20 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    try {
+                        timeout(time: 2, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                        }
+                    env.SAST_STATUS = 'PASSED'
+                    } catch (err) {
+                        env.SAST_STATUS = 'FAILED'
+                        throw err
+                    }
                 }
             }
         }
+
 
         stage('Build App') {
             steps {
@@ -67,12 +78,15 @@ pipeline {
 
         stage('OWASP ZAP DAST (Report Only)') {
             steps {
-                sh '''
+                script {
+                    sh '''
                     zaproxy -cmd \
                     -port 8091 \
                     -quickurl http://4.240.60.209:4173 \
                     -quickout /var/lib/jenkins/workspace/todo-ui-devsecops/zap-report.html || true
-                '''
+                    '''
+                env.DAST_STATUS = 'COMPLETED'
+                }
             }
         }
         stage('Fetch SonarQube Report') {
@@ -132,10 +146,11 @@ pipeline {
         <p><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
 
         <h3>Security Summary</h3>
-        <ul>
-            <li>SAST: SonarQube ✔</li>
-            <li>DAST: OWASP ZAP ✔</li>
-        </ul>
+            <ul>
+            <li>SAST (SonarQube): <b>${env.SAST_STATUS}</b></li>
+            <li>DAST (OWASP ZAP): <b>${env.DAST_STATUS}</b></li>
+            </ul>
+
 
         <p>ZAP report attached.</p>
     """,
