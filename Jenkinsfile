@@ -164,46 +164,68 @@ pipeline {
             subject: "DevSecOps Pipeline Report - ${currentBuild.currentResult}",
             mimeType: 'text/html',
             body: """
-                <h2>DevSecOps Pipeline Report</h2>
+                <h2>🚀 DevSecOps Pipeline Report</h2>
 
                 <p><b>Job:</b> ${env.JOB_NAME}</p>
                 <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
-                <p><b>Status:</b> ${currentBuild.currentResult}</p>
-                <p><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                <p><b>Status:</b> <b>${currentBuild.currentResult}</b></p>
+                <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
 
-                <h3>Security Summary</h3>
+                <hr/>
+
+                <h3>🔐 Security Scan Summary</h3>
                 <ul>
-                    <li>SAST (SonarQube): <b>${env.SAST_STATUS}</b></li>
-                    <li>DAST (OWASP ZAP): <b>${env.DAST_STATUS}</b></li>
+                    <li><b>SAST (SonarQube):</b> ${env.SAST_STATUS}</li>
+                    <li><b>SCA (Dependency-Check):</b> Completed</li>
+                    <li><b>DAST (OWASP ZAP):</b> ${env.DAST_STATUS}</li>
                 </ul>
 
-                <p>Reports attached.</p>
-            """,
-            attachmentsPattern: '''
-                zap-report.html,
-                sonar-quality-gate.json,
-                sonar-metrics.json,
-                dependency-check-reports/dependency-check-report.xml,
-                dependency-check-reports/dependency-check-report.html
-            '''
+                <hr/>
+
+                <h3>📊 Reports (Jenkins Artifacts)</h3>
+                <ul>
+                    <li>
+                        <b>SonarQube Quality Gate</b> →
+                        <a href="${env.BUILD_URL}artifact/sonar-quality-gate.json">View</a>
+                    </li>
+                    <li>
+                        <b>OWASP Dependency-Check (HTML)</b> →
+                        <a href="${env.BUILD_URL}artifact/dependency-check-reports/dependency-check-report.html">View</a>
+                    </li>
+                    <li>
+                        <b>OWASP ZAP DAST</b> →
+                        <a href="${env.BUILD_URL}artifact/zap-report.html">View</a>
+                    </li>
+                </ul>
+
+                <p style="color:gray;">
+                ⚠️ Large security reports are hosted in Jenkins to avoid email size and security restrictions.
+                </p>
+
+                <p><b>Triggered By:</b> GitHub Push</p>
+
+                <br/>
+                <p>— Jenkins DevSecOps Pipeline</p>
+            """
         )
 
         archiveArtifacts artifacts: '''
             zap-report.html,
             sonar-quality-gate.json,
             sonar-metrics.json,
-            sonar-env.txt
+            sonar-env.txt,
+            dependency-check-reports/*
         ''', allowEmptyArchive: true
 
         sh 'pkill -f "npm run preview" || true'
     }
 
     success {
-        echo '✅ Pipeline completed successfully (SAST + DAST)'
+        echo '✅ Pipeline completed successfully (SAST + SCA + DAST)'
     }
 
     failure {
-        echo '❌ Pipeline failed (Check SonarQube Quality Gate)'
+        echo '❌ Pipeline failed (Security Quality Gate Violation)'
     }
 }
 }
