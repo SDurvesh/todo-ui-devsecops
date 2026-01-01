@@ -59,6 +59,29 @@ pipeline {
                 }
             }
         }
+        stage('OWASP Dependency-Check (Docker)') {
+            steps {
+                sh '''
+                mkdir -p dependency-check-reports
+
+                docker run --rm \
+                -v "$(pwd)":/src \
+                -v dc-data:/usr/share/dependency-check/data \
+                -v "$(pwd)/dependency-check-reports":/report \
+                owasp/dependency-check:latest \
+                --project "todo-ui-devsecops" \
+                --scan /src \
+                --format XML \
+                --out /report
+            '''
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dependency-check-reports/*', fingerprint: true
+            }
+        }
+    }
 
 
         stage('Build App') {
@@ -159,7 +182,9 @@ pipeline {
             attachmentsPattern: '''
                 zap-report.html,
                 sonar-quality-gate.json,
-                sonar-metrics.json
+                sonar-metrics.json,
+                dependency-check-reports/dependency-check-report.xml,
+                dependency-check-reports/dependency-check-report.html
             '''
         )
 
