@@ -98,13 +98,13 @@ pipeline {
                 sh '''
                 docker run --rm \
                 -v "$(pwd)":/zap/wrk \
-                owasp/zap2docker-stable \
+                ghcr.io/zaproxy/zaproxy:stable \
                 zap-baseline.py \
                 -t ${APP_URL} \
                 -r zap-report.html || true
                 '''
             script {
-                env.DAST_STATUS = 'COMPLETED'
+            env.DAST_STATUS = 'COMPLETED'
             }
         }
     }
