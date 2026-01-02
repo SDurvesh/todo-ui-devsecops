@@ -97,6 +97,7 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm \
+                -u 0 \
                 -v "$(pwd)":/zap/wrk \
                 ghcr.io/zaproxy/zaproxy:stable \
                 zap-baseline.py \
