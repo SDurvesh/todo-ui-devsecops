@@ -75,12 +75,6 @@ pipeline {
                 --out /report
             '''
             }
-
-            post {
-                always {
-                    archiveArtifacts artifacts: 'dependency-check-reports/*', fingerprint: true
-            }
-        }
     }
 
 
@@ -99,19 +93,22 @@ pipeline {
             }
         }
 
-        stage('OWASP ZAP DAST (Report Only)') {
+        stage('OWASP ZAP DAST (Docker)') {
             steps {
-                script {
-                    sh '''
-                    zaproxy -cmd \
-                    -port 8091 \
-                    -quickurl http://4.240.60.209:4173 \
-                    -quickout /var/lib/jenkins/workspace/todo-ui-devsecops/zap-report.html || true
-                    '''
+                sh '''
+                docker run --rm \
+                -v "$(pwd)":/zap/wrk \
+                owasp/zap2docker-stable \
+                zap-baseline.py \
+                -t ${APP_URL} \
+                -r zap-report.html || true
+                '''
+            script {
                 env.DAST_STATUS = 'COMPLETED'
-                }
             }
         }
+    }
+
         stage('Fetch SonarQube Report') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
@@ -220,12 +217,12 @@ pipeline {
         sh 'pkill -f "npm run preview" || true'
     }
 
-    success {
-        echo '✅ Pipeline completed successfully (SAST + SCA + DAST)'
-    }
+        success {
+            echo '✅ Pipeline completed successfully (SAST + SCA + DAST)'
+        }
 
-    failure {
-        echo '❌ Pipeline failed (Security Quality Gate Violation)'
+        failure {
+            echo '❌ Pipeline failed (Security Quality Gate Violation)'
+        }
     }
-}
 }
